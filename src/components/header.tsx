@@ -1,6 +1,6 @@
 import Image from "next/image"
 import Link from "next/link"
-import digitalOceanImage from "../../public/Gaming_Ocean_TCG_Youtube_Banner_-_Centered.png"
+import gamingOcean from "../../public/gamingOcean.png"
 
 const routes = [
   {
@@ -28,9 +28,9 @@ export default function Header() {
         alt=""
         className="object-cover h-[350px] w-full"
         height={350}
-        src={digitalOceanImage}
+        src={gamingOcean}
       />
-      <nav className="bg-[#3c096c] border-b flex items-center h-[50px] justify-center shadow text-white">
+      <nav className="bg-[#3c096c] border-b flex items-center h-[50px] justify-center text-white">
         <ul className="flex items-center justify-center gap-10">
           {routes.map((route) => (
             <li key={route.path}>
