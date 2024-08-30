@@ -1,6 +1,5 @@
 "use client";
 
-import Error from "@/components/error";
 import { Button } from "@/components/ui/button";
 import { useCartContext, useProductContext } from "@/lib/hooks";
 import { toUsdPrice } from "@/lib/utils";
@@ -37,6 +36,7 @@ export default function Page() {
               <p>
                 {toUsdPrice(selectedProduct.default_price.unit_amount / 100)}
               </p>
+              <p>{selectedProduct.metadata.description}</p>
             </section>
 
             <Button

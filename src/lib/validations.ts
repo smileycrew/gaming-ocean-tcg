@@ -1,3 +1,4 @@
+import { metadata } from "@/app/layout";
 import { z } from "zod";
 
 export const authSchema = z.object({
@@ -35,6 +36,12 @@ const productSchema = z.object({
   }),
   description: z.string(),
   images: z.array(z.string()),
+  metadata: z.union([
+    z.object({
+      description: z.string(),
+    }),
+    z.object({}),
+  ]),
   name: z.string(),
 });
 

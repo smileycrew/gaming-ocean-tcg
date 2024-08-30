@@ -23,7 +23,6 @@ export async function getProducts() {
     active: true,
     expand: ["data.default_price"],
   });
-  console.log("🚀 ~ getProducts ~ data:", data.data);
 
   const validatedProducts = productsSchema.safeParse(data.data);
 
@@ -31,7 +30,7 @@ export async function getProducts() {
     throw new Error("Something went wrong.");
   }
 
-  return validatedProducts.data;
+  return data.data;
 }
 
 export async function getUserByEmail(email: User["email"]) {
