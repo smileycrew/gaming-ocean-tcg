@@ -43,30 +43,28 @@ const config = {
     authorized: ({ auth, request }) => {
       // runs on every request with middleware
       const isLoggedIn = Boolean(auth?.user);
-      const isTryingToAccessApp = request.nextUrl.pathname.includes("/app");
+
+      if (
+        !isLoggedIn &&
+        (request.nextUrl.pathname.includes("/orders") ||
+          request.nextUrl.pathname.includes("/account"))
+      ) {
+        return Response.redirect(new URL("/login", request.nextUrl));
+      }
 
       if (
         isLoggedIn &&
         (request.nextUrl.pathname.includes("/login") ||
-          request.nextUrl.pathname.includes("register"))
+          request.nextUrl.pathname.includes("/register"))
       ) {
-        console.log("LOGGED IN AND IN THE /LOGIN PAGE");
         return Response.redirect(new URL("/", request.nextUrl));
       }
 
-      if (!isLoggedIn && !isTryingToAccessApp) {
+      if (isLoggedIn) {
         return true;
       }
 
-      if (!isLoggedIn && isTryingToAccessApp) {
-        return Response.redirect(new URL("/login", request.nextUrl));
-      }
-
-      if (isLoggedIn && !isTryingToAccessApp) {
-        return true;
-      }
-
-      if (isLoggedIn && isTryingToAccessApp) {
+      if (!isLoggedIn) {
         return true;
       }
 

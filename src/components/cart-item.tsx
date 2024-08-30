@@ -3,10 +3,10 @@ import { Button } from "./ui/button";
 import QuantityButtons from "./quantity-buttons";
 import { toUsdPrice } from "@/lib/utils";
 import { useCartContext } from "@/lib/hooks";
-import { TCartItems } from "@/lib/types";
+import { CartItem as CartItemType } from "@/lib/types";
 
 type CartItemProps = {
-  cartItem: TCartItems;
+  cartItem: CartItemType;
 };
 
 export default function CartItem({ cartItem }: CartItemProps) {
@@ -22,7 +22,13 @@ export default function CartItem({ cartItem }: CartItemProps) {
       key={cartItem.id}
     >
       <div className="flex items-center gap-3">
-        <Image alt="" height={50} src={cartItem.images[0]} width={50} />
+        <Image
+          alt={cartItem.name}
+          className="w-[100px] object-cover"
+          height={50}
+          src={cartItem.images[0]}
+          width={50}
+        />
         <p>{cartItem.name}</p>
       </div>
       <p>{toUsdPrice(cartItem.default_price.unit_amount / 100)}</p>

@@ -8,7 +8,7 @@ import { useCartContext } from "@/lib/hooks";
 import React from "react";
 
 export default function Page() {
-  const { checkout, cartItems, subtotal, isGettingCartItems } =
+  const { checkout, productsInCart, subtotal, isGettingCartItems } =
     useCartContext();
 
   if (isGettingCartItems) {
@@ -19,18 +19,18 @@ export default function Page() {
     );
   }
 
-  if (cartItems?.length === 0) {
+  if (!productsInCart) {
     return (
       <div className="flex h-full items-center justify-center">
-        <p className="text-4xl">Your Cart Is Empty</p>
+        <p className="text-4xl">Something went wrong</p>
       </div>
     );
   }
 
-  if (!cartItems) {
+  if (productsInCart.length === 0) {
     return (
       <div className="flex h-full items-center justify-center">
-        <p className="text-4xl">Something went wrong</p>
+        <p className="text-4xl">Your Cart Is Empty</p>
       </div>
     );
   }
@@ -44,8 +44,8 @@ export default function Page() {
 
       <article>
         <ul>
-          {cartItems.map((cartItem) => (
-            <CartItem cartItem={cartItem} key={cartItem.id} />
+          {productsInCart.map((product) => (
+            <CartItem cartItem={product} key={product.id} />
           ))}
         </ul>
       </article>

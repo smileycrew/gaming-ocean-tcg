@@ -19,6 +19,10 @@ export const routes = [
     label: "Shop",
     path: "/products",
   },
+  {
+    label: "Account",
+    path: "/account",
+  },
 ];
 
 export const socials = [

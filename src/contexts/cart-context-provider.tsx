@@ -1,22 +1,22 @@
 "use client";
 
 import { createCheckoutSession } from "@/actions/actions";
-import { TCartItems } from "@/lib/types";
-import { CartItems, cartItemsSchema, Product } from "@/lib/validations";
+import { CartItem } from "@/lib/types";
+import { Cart, cartEssentialsSchema, Product } from "@/lib/validations";
 import { createContext, useEffect, useState } from "react";
 
 type CartContext = {
-  cartItems: TCartItems[] | null;
   clearCart: () => void;
   addQuantity: (productId: string) => void;
-  addItemToCart: (product: Product) => void;
+  addItemToCart: (productId: Product["id"]) => void;
   checkout: () => void;
   changeQuantityOnInput: (productId: string, quantity: number) => void;
+  isCartLoading: boolean;
+  numberOfItemsInCart: number;
+  productsInCart: CartItem[] | null;
   removeItemFromCart: (productId: string) => void;
-  subtractQuantity: (productId: string) => void;
-  isGettingCartItems: boolean;
-  numberOfCartItems: number;
   subtotal: number;
+  subtractQuantity: (productId: string) => void;
 };
 
 type CartContextProviderProps = {
@@ -30,156 +30,162 @@ export default function CartContextProvider({
   children,
   products,
 }: CartContextProviderProps) {
-  const [cartItems, setCartItems] = useState<TCartItems[] | null>(null);
-  const [isGettingCartItems, setIsGettingCartItems] = useState(true);
+  const [cart, setCart] = useState<Cart[] | null>(null);
+  const isCartLoading = !cart ? true : false;
 
-  const subtotal = cartItems
-    ? cartItems.reduce((currentTotal, cartItem) => {
-        return (
-          currentTotal +
-          (cartItem.default_price.unit_amount * cartItem.quantity || 0)
-        );
+  const productsInCart = cart
+    ? products
+        .map((p) => {
+          const findProduct = cart.find((c) => c.productId === p.id);
+
+          if (findProduct !== undefined) {
+            return {
+              ...p,
+              quantity: findProduct.quantity,
+            };
+          }
+
+          return null;
+        })
+        .filter((product) => product !== null)
+    : null;
+
+  const subtotal = productsInCart
+    ? productsInCart.reduce((currentTotal, p) => {
+        return currentTotal + (p.default_price.unit_amount * p.quantity || 0);
       }, 0) / 100
     : 0;
 
-  const numberOfCartItems = cartItems ? cartItems.length : 0;
+  const numberOfItemsInCart = productsInCart ? productsInCart.length : 0;
 
   const clearCart = () => {
-    setCartItems(null);
+    setCart(null);
 
     window.localStorage.setItem("gaming-ocean-cart", JSON.stringify([]));
   };
 
   const addQuantity = (productId: string) => {
-    console.log(`Adding quantity for product with id of ${productId}`);
-
-    // refined validation
-    if (!cartItems) {
+    if (!cart) {
       return;
     }
 
-    const updatedCart = cartItems.map((cartItem) => {
-      if (cartItem.id === productId) {
-        cartItem.quantity++;
+    const updatedCart = cart.map((c) => {
+      if (c.productId === productId) {
+        c.quantity++;
 
-        return cartItem;
+        return c;
       }
 
-      return cartItem;
+      return c;
     });
 
-    setCartItems(updatedCart);
+    setCart(updatedCart);
   };
 
   const changeQuantityOnInput = (productId: string, quantity: number) => {
     // refined validation
-    if (!cartItems) {
+    if (!cart) {
       return;
     }
 
-    const updatedCart = cartItems.map((cartItem) => {
-      if (cartItem.id === productId) {
-        cartItem.quantity = quantity;
+    const updatedCart = cart.map((c) => {
+      if (c.productId === productId) {
+        c.quantity = quantity;
 
-        return cartItem;
+        return c;
       }
 
-      return cartItem;
+      return c;
     });
 
-    setCartItems(updatedCart);
+    setCart(updatedCart);
   };
 
-  const addItemToCart = (product: Product) => {
-    if (!cartItems) {
+  const addItemToCart = (productId: Product["id"]) => {
+    if (!cart || !productsInCart) {
       return;
     }
     // check if the product exists in your cart <boolean>
-    const findProductInCart = cartItems.some(
-      (cartItem) => cartItem.id === product.id,
+    const findProductInCart = productsInCart.some(
+      (cartItem) => cartItem.id === productId,
     );
     // if product does not exist in cart then will add product to cart
     if (!findProductInCart) {
-      const updatedCart = [...cartItems, { ...product, quantity: 1 }];
+      const updatedCart = [...cart, { productId, quantity: 1 }];
 
-      setCartItems(updatedCart);
+      setCart(updatedCart);
     } else {
       // if product exists in cart then will update the quantity by 1
-      const updatedCart = cartItems.map((cartItem) => {
-        if (cartItem.id === product.id) {
-          cartItem.quantity++;
+      const updatedCart = cart.map((c) => {
+        if (c.productId === productId) {
+          c.quantity++;
 
-          return cartItem;
+          return c;
         }
 
-        return cartItem;
+        return c;
       });
 
-      setCartItems(updatedCart);
+      setCart(updatedCart);
     }
   };
 
   const checkout = async () => {
-    if (!cartItems) {
+    if (!productsInCart) {
       return;
     }
 
-    const checkoutItems = cartItems.map((cartItem) => {
+    const checkoutItems = productsInCart.map((p) => {
       return {
-        price: cartItem.default_price.id,
-        quantity: cartItem.quantity,
+        price: p.default_price.id,
+        quantity: p.quantity,
       };
     });
-    console.log("🚀 ~ checkoutItems ~ checkoutItems:", checkoutItems);
 
     await createCheckoutSession(checkoutItems);
   };
 
   const removeItemFromCart = (productId: string) => {
-    if (!cartItems) {
+    if (!cart) {
       return;
     }
 
-    const updatedCart = cartItems.filter(
-      (cartItem) => cartItem.id !== productId,
+    const updatedCart = cart.filter(
+      (cartItem) => cartItem.productId !== productId,
     );
 
-    setCartItems(updatedCart);
+    setCart(updatedCart);
   };
 
   const subtractQuantity = (productId: string) => {
-    console.log(`Adding quantity for product with id of ${productId}`);
-
-    if (!cartItems) {
+    if (!cart) {
       return;
     }
 
-    const updatedCart = cartItems.map((cartItem) => {
-      if (cartItem.id === productId) {
-        if (cartItem.quantity <= 1) {
-          return cartItem;
+    const updatedCart = cart.map((c) => {
+      if (c.productId === productId) {
+        if (c.quantity <= 1) {
+          return c;
         } else {
-          cartItem.quantity--;
+          c.quantity--;
 
-          return cartItem;
+          return c;
         }
       }
 
-      return cartItem;
+      return c;
     });
 
-    console.log("🚀 ~ updatedCart ~ updatedCart:", updatedCart);
-
-    setCartItems(updatedCart);
+    setCart(updatedCart);
   };
 
-  const verifyItemsExist = (productsFromLocalStorage: CartItems) => {
+  const verifyItemsExist = (cartFromLocalStorage: Cart[]) => {
     // return a list of products that exist
-    const validatedProducts = productsFromLocalStorage.filter((product) => {
-      const doesProductExist = products.some((p) => p.id === product.id);
+    const validatedProducts = cartFromLocalStorage.filter((item) => {
+      const doesProductExist = products.some((p) => p.id === item.productId);
 
       if (doesProductExist) {
-        return product;
+        return item;
       }
     });
 
@@ -188,7 +194,7 @@ export default function CartContextProvider({
 
   // on mount we are getting the cart from the local storage
   useEffect(() => {
-    if (!cartItems) {
+    if (!cart) {
       // get local storage cart
       const cartItemsFromLocalStorage =
         window.localStorage.getItem("gaming-ocean-cart");
@@ -196,7 +202,7 @@ export default function CartContextProvider({
       if (!cartItemsFromLocalStorage) {
         window.localStorage.setItem("gaming-ocean-cart", JSON.stringify([]));
       } else {
-        const validatedCartItems = cartItemsSchema.safeParse(
+        const validatedCartItems = cartEssentialsSchema.safeParse(
           JSON.parse(cartItemsFromLocalStorage),
         );
 
@@ -205,24 +211,23 @@ export default function CartContextProvider({
         }
 
         // validate that each item is in the list of current products
-        const verifiedProducts = verifyItemsExist(validatedCartItems.data);
+        const verifiedCart = verifyItemsExist(validatedCartItems.data);
 
-        setCartItems(verifiedProducts);
-        setIsGettingCartItems(false);
+        setCart(verifiedCart);
       }
     } else {
-      const validatedVartItems = verifyItemsExist(cartItems);
+      const validatedVartItems = verifyItemsExist(cart);
       window.localStorage.setItem(
         "gaming-ocean-cart",
         JSON.stringify(validatedVartItems),
       );
     }
-  }, [cartItems]);
+  }, [cart]);
 
   return (
     <CartContext.Provider
       value={{
-        cartItems,
+        productsInCart,
         clearCart,
         addQuantity,
         addItemToCart,
@@ -230,9 +235,9 @@ export default function CartContextProvider({
         changeQuantityOnInput,
         removeItemFromCart,
         subtractQuantity,
-        numberOfCartItems,
+        numberOfItemsInCart,
         subtotal,
-        isGettingCartItems,
+        isCartLoading,
       }}
     >
       {children}

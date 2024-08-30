@@ -4,7 +4,7 @@ import { User } from "@prisma/client";
 import prisma from "./db";
 import { auth } from "./auth";
 import { redirect } from "next/navigation";
-import { productsSchema } from "./validations";
+import { chargesSchema, productsSchema } from "./validations";
 
 const stripe = require("stripe")(process.env.SECRET_KEY);
 
@@ -16,6 +16,24 @@ export async function checkAuth() {
   }
 
   return session;
+}
+
+export async function getCharges() {
+  const session = await checkAuth();
+
+  const charges = await stripe.charges.list();
+
+  const validatedCharges = chargesSchema.safeParse(charges.data);
+
+  if (!validatedCharges.success) {
+    throw new Error("Something went wrong");
+  }
+
+  const filteredCharges = validatedCharges.data.filter(
+    (charge) => charge.billing_details.email === session.user.email,
+  );
+
+  return filteredCharges;
 }
 
 export async function getProducts() {
@@ -30,7 +48,7 @@ export async function getProducts() {
     throw new Error("Something went wrong.");
   }
 
-  return data.data;
+  return validatedProducts.data;
 }
 
 export async function getUserByEmail(email: User["email"]) {

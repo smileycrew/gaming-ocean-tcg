@@ -1,12 +1,12 @@
-import { getCharges } from "@/actions/actions";
 import { Button } from "@/components/ui/button";
+import { getCharges } from "@/lib/server-utils";
 import { convertUnixTimestampToDate, toUsdPrice } from "@/lib/utils";
 import Link from "next/link";
 
 export default async function Page() {
   const charges = await getCharges();
 
-  if (charges.length === 0) {
+  if (charges.length <= 0) {
     return (
       <div className="flex h-full items-center justify-center text-center">
         <p>No orders on your account.</p>
@@ -27,6 +27,7 @@ export default async function Page() {
           </tr>
         </thead>
       </table>
+
       <ul className="w-2/3">
         {charges.map((charge, index) => (
           <li
@@ -36,6 +37,7 @@ export default async function Page() {
             <p>{index + 1}</p>
             <p>{convertUnixTimestampToDate(charge.created)}</p>
             <p>{toUsdPrice(charge.amount / 100)}</p>
+
             <Button asChild variant="link">
               <Link href={charge.receipt_url}>View my receipt</Link>
             </Button>

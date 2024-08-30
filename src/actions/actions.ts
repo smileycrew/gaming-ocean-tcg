@@ -2,10 +2,9 @@
 
 import { signIn, signOut } from "@/lib/auth";
 import {
-  authSchema,
-  chargesSchema,
   CheckoutItems,
-  checkoutItemsSchema,
+  checkoutSchema,
+  registerSchema,
 } from "@/lib/validations";
 import { Prisma } from "@prisma/client";
 import { AuthError } from "next-auth";
@@ -57,7 +56,7 @@ export async function register(prevState: unknown, formData: unknown) {
   }
 
   const formDataEntries = Object.fromEntries(formData.entries());
-  const validatedFormData = authSchema.safeParse(formDataEntries);
+  const validatedFormData = registerSchema.safeParse(formDataEntries);
 
   if (!validatedFormData.success) {
     return {
@@ -65,13 +64,15 @@ export async function register(prevState: unknown, formData: unknown) {
     };
   }
 
-  const { email, password } = validatedFormData.data;
+  const { email, firstName, lastName, password } = validatedFormData.data;
   const hashedPassword = await bcrypt.hash(password, 10);
 
   try {
     await prisma.user.create({
       data: {
         email,
+        firstName,
+        lastName,
         hashedPassword,
       },
     });
@@ -92,39 +93,20 @@ export async function createCheckoutSession(checkoutItems: CheckoutItems) {
   // authentication check
   const session = await checkAuth();
   // validate checkoutItems
-  const validatedCheckoutItems = checkoutItemsSchema.safeParse(checkoutItems);
+  const validatedCheckout = checkoutSchema.safeParse(checkoutItems);
 
-  if (!validatedCheckoutItems.success) {
+  if (!validatedCheckout.success) {
     throw new Error("Something went wrong.");
   }
 
   const checkoutSession = await stripe.checkout.sessions.create({
     customer_email: session.user.email,
-    line_items: validatedCheckoutItems.data,
+    line_items: validatedCheckout.data,
     mode: "payment",
     success_url: `${process.env.CANONICAL_URL}/payment?success=true`,
     cancel_url: `${process.env.CANONICAL_URL}/payment?cancelled=true`,
   });
-  console.log("🚀 ~ createCheckoutSession ~ checkoutSession:", checkoutSession);
 
   // redirect user
   redirect(checkoutSession.url);
-}
-
-export async function getCharges() {
-  const session = await checkAuth();
-
-  const charges = await stripe.charges.list();
-
-  const validatedCharges = chargesSchema.safeParse(charges.data);
-
-  if (!validatedCharges.success) {
-    throw new Error("Something went wrong");
-  }
-
-  const filteredCharges = validatedCharges.data.filter(
-    (charge) => charge.billing_details.email === session.user.email,
-  );
-
-  return filteredCharges;
 }

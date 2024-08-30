@@ -2,13 +2,17 @@ import { useRouter } from "next/navigation";
 import { Button } from "./ui/button";
 import Image from "next/image";
 import { toUsdPrice } from "@/lib/utils";
-import { ProductListItemProps } from "@/lib/types";
 import Link from "next/link";
+import { useCartContext } from "@/lib/hooks";
+import { Product } from "@/lib/validations";
+import { useState } from "react";
 
-export default function ProductListItem({
-  onClick,
-  product,
-}: ProductListItemProps) {
+export type ProductListItemProps = {
+  product: Product;
+};
+
+export default function ProductListItem({ product }: ProductListItemProps) {
+  const { addItemToCart } = useCartContext();
   const router = useRouter();
 
   return (
@@ -34,7 +38,7 @@ export default function ProductListItem({
 
       <Button
         onClick={() => {
-          onClick();
+          addItemToCart(product.id);
 
           router.push("/cart");
         }}

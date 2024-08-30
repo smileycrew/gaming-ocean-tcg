@@ -1,4 +1,3 @@
-import { metadata } from "@/app/layout";
 import { z } from "zod";
 
 export const authSchema = z.object({
@@ -6,19 +5,12 @@ export const authSchema = z.object({
   password: z.string().max(100),
 });
 
-const cartSchema = z.object({
-  id: z.string(),
-  default_price: z.object({
-    id: z.string(),
-    unit_amount: z.coerce.number().int(),
-  }),
-  description: z.string(),
-  images: z.array(z.string()),
-  name: z.string(),
+const cartEssentials = z.object({
+  productId: z.string(),
   quantity: z.coerce.number().int(),
 });
 
-const chargeSchema = z.object({
+const chargeEssentials = z.object({
   id: z.string(),
   amount: z.coerce.number().int(),
   billing_details: z.object({
@@ -28,7 +20,12 @@ const chargeSchema = z.object({
   receipt_url: z.string().url(),
 });
 
-const productSchema = z.object({
+const checkoutEssentials = z.object({
+  price: z.string(),
+  quantity: z.coerce.number().int(),
+});
+
+const productEssentials = z.object({
   id: z.string(),
   default_price: z.object({
     id: z.string(),
@@ -45,18 +42,26 @@ const productSchema = z.object({
   name: z.string(),
 });
 
-const checkoutItemSchema = z.object({
-  price: z.string(),
-  quantity: z.coerce.number().int(),
-});
+export const productWithQuantity = productEssentials.merge(
+  z.object({
+    quantity: z.coerce.number().int(),
+  }),
+);
 
-export const cartItemsSchema = z.array(cartSchema);
-export const chargesSchema = z.array(chargeSchema);
-export const checkoutItemsSchema = z.array(checkoutItemSchema);
-export const productsSchema = z.array(productSchema);
+export const registerSchema = authSchema.merge(
+  z.object({
+    firstName: z.string(),
+    lastName: z.string(),
+  }),
+);
+
+export const cartEssentialsSchema = z.array(cartEssentials);
+export const chargesSchema = z.array(chargeEssentials);
+export const checkoutSchema = z.array(checkoutEssentials);
+export const productsSchema = z.array(productEssentials);
 
 export type Auth = z.infer<typeof authSchema>;
-export type Cart = z.infer<typeof cartSchema>;
-export type CartItems = z.infer<typeof cartItemsSchema>;
-export type CheckoutItems = z.infer<typeof checkoutItemsSchema>;
-export type Product = z.infer<typeof productSchema>;
+export type Cart = z.infer<typeof cartEssentials>;
+export type CartItems = z.infer<typeof cartEssentialsSchema>;
+export type CheckoutItems = z.infer<typeof checkoutSchema>;
+export type Product = z.infer<typeof productEssentials>;

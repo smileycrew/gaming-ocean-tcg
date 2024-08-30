@@ -1,9 +1,18 @@
 "use client";
 
-import { ProductContextProviderProps, TProductContext } from "@/lib/types";
+import { Product } from "@/lib/validations";
 import { createContext } from "react";
 
-export const ProductContext = createContext<TProductContext | null>(null);
+type ProductContext = {
+  products: Product[];
+};
+
+type ProductContextProviderProps = {
+  children: React.ReactNode;
+  products: Product[];
+};
+
+export const ProductContext = createContext<ProductContext | null>(null);
 
 export default function ProductContextProvider({
   children,
