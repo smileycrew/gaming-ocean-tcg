@@ -37,7 +37,7 @@ export default function QuantityButtons({
 
       <Input
         className="text-center"
-        id="quantity"
+        id={productId}
         type="number"
         onChange={handleInputChange}
         value={quantity}

@@ -1,3 +1,16 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+/* Add this in your global.css or any main CSS file */
+
+/* For Chrome, Safari, Edge, Opera */
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+  @apply appearance-none;
+}
+
+/* For Firefox */
+input[type="number"] {
+  -moz-appearance: textfield; /* You can add Tailwind utility classes if needed */
+}

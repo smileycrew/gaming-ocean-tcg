@@ -1,4 +1,5 @@
 import { socials } from "@/lib/data";
+import Image from "next/image";
 import Link from "next/link";
 
 export default function Footer() {
@@ -8,7 +9,11 @@ export default function Footer() {
         {socials.map((social) => (
           <li key={social.path}>
             <Link href={social.path}>
-              <social.component />
+              <Image
+                alt={social.alt}
+                className="h-[40px] w-[40px] transition hover:scale-110"
+                src={social.icon}
+              />
             </Link>
           </li>
         ))}

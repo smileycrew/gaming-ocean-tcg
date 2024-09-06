@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const authSchema = z.object({
+export const userEssentials = z.object({
   email: z.string().email().max(100),
   password: z.string().max(100),
 });
@@ -33,12 +33,6 @@ const productEssentials = z.object({
   }),
   description: z.string(),
   images: z.array(z.string()),
-  metadata: z.union([
-    z.object({
-      description: z.string(),
-    }),
-    z.object({}),
-  ]),
   name: z.string(),
 });
 
@@ -48,12 +42,24 @@ export const productWithQuantity = productEssentials.merge(
   }),
 );
 
-export const registerSchema = authSchema.merge(
+export const registerSchema = userEssentials.merge(
   z.object({
     firstName: z.string(),
     lastName: z.string(),
   }),
 );
+
+export const authSchema = registerSchema.merge(
+  z.object({
+    firstName: z.string(),
+    lastName: z.string(),
+    stripeCustomerId: z.string(),
+  }),
+);
+
+export const stripeCustomerIdSchema = z.object({
+  id: z.string(),
+});
 
 export const cartEssentialsSchema = z.array(cartEssentials);
 export const chargesSchema = z.array(chargeEssentials);

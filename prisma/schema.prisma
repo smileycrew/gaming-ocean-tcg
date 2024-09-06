@@ -2,21 +2,33 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+    provider = "sqlite"
+    url      = env("DATABASE_URL")
 }
 
 model User {
-  id             String   @id @default(cuid())
-  createdAt      DateTime @default(now())
-  email          String   @unique
-  firstName      String
-  hasAccess      Boolean  @default(false)
-  hashedPassword String
-  updatedAt      DateTime @updatedAt
-  lastName       String
+    id               String   @id @default(cuid())
+    createdAt        DateTime @default(now())
+    email            String   @unique
+    firstName        String
+    hasAccess        Boolean  @default(false)
+    hashedPassword   String
+    updatedAt        DateTime @updatedAt
+    lastName         String
+    stripeCustomerId String   @unique
+}
+
+model Product {
+    id              String @id @default(cuid())
+    name            String @unique
+    description     String
+    imageUrl        String
+    stock           Int
+    stripePriceId   String
+    price           Int
+    stripeProductId String @unique
 }
